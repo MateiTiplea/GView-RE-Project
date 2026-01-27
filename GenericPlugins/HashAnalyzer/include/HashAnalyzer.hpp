@@ -23,7 +23,7 @@ class AnalysisResultsDialog : public Window, public Handlers::OnButtonPressedInt
     Reference<Button> closeBtn;
 
   public:
-    AnalysisResultsDialog(const AnalysisResult& result);
+    AnalysisResultsDialog(const AnalysisResult& result, const std::vector<std::string>& preferredAVs);
     void OnButtonPressed(Reference<Button> b) override;
 };
 
@@ -55,6 +55,8 @@ class HashAnalyzerDialog : public Window, public Handlers::OnButtonPressedInterf
     std::string sha1Hash;
     std::string sha256Hash;
     bool hashesComputed;
+    
+    std::vector<std::string> preferredAVs; // Loaded from config
 
     void ComputeHash();
     void OnAnalyze();

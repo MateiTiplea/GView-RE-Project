@@ -25,7 +25,7 @@ constexpr std::string_view CMD_FULL_NAME  = "Command.HashAnalyzer";
 // AnalysisResultsDialog Implementation
 // ============================================================================
 
-AnalysisResultsDialog::AnalysisResultsDialog(const AnalysisResult& result)
+AnalysisResultsDialog::AnalysisResultsDialog(const AnalysisResult& result, const std::vector<std::string>& preferredAVs)
     : Window("Analysis Results", "d:c,w:80,h:24", WindowFlags::ProcessReturn), storedResult(result)
 {
     // Summary - Line 1: Service & Detection
@@ -39,12 +39,23 @@ AnalysisResultsDialog::AnalysisResultsDialog(const AnalysisResult& result)
     std::string line2 = "Date: " + result.scanDate + "  |  Type: " + result.fileType + "  |  Size: " + std::to_string(result.fileSize) + " bytes";
     Factory::Label::Create(this, line2, "x:1,y:2,w:78");
 
-    // Vendor Results List - Taking up more space now
+    // Vendor Results List
     resultsList = Factory::ListView::Create(this, "l:1,t:4,r:1,b:4", { "n:Vendor,w:20", "n:Result,w:54" });
 
     if (result.found) {
-        for (const auto& [vendor, detection] : result.vendorResults) {
-            resultsList->AddItem({ vendor, detection });
+        if (preferredAVs.empty()) {
+            for (const auto& [vendor, detection] : result.vendorResults) {
+                resultsList->AddItem({ vendor, detection });
+            }
+        } else {
+             for (const auto& vendor : preferredAVs) {
+                 auto it = result.vendorResults.find(vendor);
+                 if (it != result.vendorResults.end()) {
+                     resultsList->AddItem({ vendor, it->second });
+                 } else {
+                     resultsList->AddItem({ vendor, "-" });
+                 }
+             }
         }
     } else {
         resultsList->AddItem({ "Info", "No results found or file not in database." });
@@ -191,7 +202,9 @@ void HashAnalyzerDialog::OnAnalyze()
     // Close this dialog and open the results dialog
     Exit();
 
-    AnalysisResultsDialog resultsDialog(result);
+    // Get preferred AVs from config
+    const auto& config = GetPluginConfig();
+    AnalysisResultsDialog resultsDialog(result, config.PreferredAVs);
     resultsDialog.Show();
 }
 
