@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GView.hpp"
+#include <vector>
 
 namespace GView::GenericPlugins::HashAnalyzer
 {
@@ -8,6 +9,8 @@ struct Config {
     struct {
         std::string ApiKey;
     } VirusTotal;
+
+    std::vector<std::string> PreferredAVs;
 
     std::string DefaultService;
     bool Loaded;
